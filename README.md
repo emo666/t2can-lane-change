@@ -76,30 +76,31 @@ https://github.com/emo666/t2can-lane-change
 
 请先确认设备已与车辆断开，并根据我的操作系统检查 USB 连接、串口、Python 和 PlatformIO；缺少工具时指导我从官方来源安装。不要猜测串口：如果有多个候选设备或无法确认 T-2CAN，请让我确认。
 
-请下载项目，检查 platformio.ini。将 src/credentials.example.h 复制为 src/credentials.h，并让我在本地文件中设置热点名称 SSID、热点密码 PASSWORD 和网页登录密码 TOKEN；三个值都要替换示例占位符，热点密码至少 8 位。不要让我把密码发到聊天中，也不要输出或上传实际密码。
+请下载项目，检查 platformio.ini。将 src/credentials.example.h 复制为 src/credentials.h，并让我在本地文件中设置热点名称 SSID 和热点密码 PASSWORD；热点密码至少 8 位。保留示例中默认的网页登录密码 TOKEN。不要让我把个人热点密码发到聊天中，也不要输出或上传它。
 
 在项目目录编译固件。如果设备上已有需要保留的固件或数据，请先帮助我备份并确认设备分区；备份或设备状态无法确认时先停下。确认目标设备和刷写风险后，使用 PlatformIO 的 USB 上传方式刷写，刷写可能覆盖已有固件和分区。
 
 刷写结束后报告结果、生成的固件位置和访问网页的方法；如果失败，请根据实际错误帮助我排查。不要声称已经验证车辆效果。
 ```
 
-刷写成功后，连接配置的 Wi-Fi 热点，打开 `http://192.168.4.1/`；网页登录用户名为 `admin`，密码是本地设置的 `TOKEN`。设备每次重启后开关默认开启。
+刷写成功后，连接配置的 Wi-Fi 热点，打开 `http://192.168.4.1/`；默认网页登录用户名为 `admin`，密码为 `88888888`。设备每次重启后开关默认开启。
 
 ### 方式二：网页一键刷写
 
-使用乐鑫官方的 [ESP Tool 网页刷写工具](https://espressif.github.io/esptool-js/)，配合项目生成的个人完整固件。网页负责刷写，首次使用仍需先在电脑上生成固件文件。
+不需要安装编译工具。先下载项目准备好的[完整固件包](https://github.com/emo666/t2can-lane-change/raw/refs/heads/main/release/t2can-complete.bin)，再用乐鑫官方的 [ESP Tool 网页刷写工具](https://espressif.github.io/esptool-js/)刷写。
 
-1. 在电脑上安装 Python、PlatformIO 和 esptool，下载本项目；将 `src/credentials.example.h` 复制为 `src/credentials.h`，填入自己的热点名称、热点密码和网页登录密码。热点密码至少 8 位。
-2. 在项目目录执行 `python scripts/make_complete_firmware.py`。脚本会编译并生成 `.pio/build/t2can-lane-change/t2can-complete.bin`。如提示缺少工具，可执行 `python -m pip install platformio esptool` 后重试。
-3. 将 T-2CAN 与车辆断开，用 USB 数据线连接电脑，在 Chrome 或 Edge 打开 [ESP Tool](https://espressif.github.io/esptool-js/)。
-4. 在 **Program** 区域点击 **Connect**，选择开发板串口。确认识别到 ESP32-S3 后，选择上一步生成的 `t2can-complete.bin`，将 **Flash Address 改为 `0x0`**，再点击 **Program**。不要随意选择 Erase all；刷写前请先备份。
-5. 刷写完成后设备重启；连接设置的热点，访问 `http://192.168.4.1/`。用户名为 `admin`，密码为配置的 `TOKEN`。
+1. 将 T-2CAN 与车辆断开，用 USB 数据线连接电脑，在 Chrome 或 Edge 打开 [ESP Tool](https://espressif.github.io/esptool-js/)。刷写前请备份需要保留的固件和数据。
+2. 在 **Program** 区域点击 **Connect**，选择开发板串口，确认识别到 ESP32-S3。
+3. 选择下载的 `t2can-complete.bin`，将 **Flash Address 改为 `0x0`**，再点击 **Program**。不要随意选择 Erase all。
+4. 刷写完成后设备重启。手机连接热点 `T2CAN-Monitor`，热点密码为 `t2can888`；浏览器访问 `http://192.168.4.1/`，登录用户名 `admin`、密码 `88888888`。
 
-此完整镜像会覆盖其写入范围内的数据，包括 NVS；即使没有勾选 Erase all 也可能丢失该范围内原有数据。**`firmware.bin` 是单独的应用文件，不是上述完整镜像，不能直接按 `0x0` 使用。**生成的完整固件包含个人密码，不要公开分享。该刷写流程尚未在实际 T-2CAN 设备上验证。
+此完整镜像会覆盖其写入范围内的数据，包括 NVS；即使没有勾选 Erase all 也可能丢失该范围内原有数据。**不要把单独的应用文件 `firmware.bin` 当作完整镜像按 `0x0` 刷写。**该刷写流程尚未在实际 T-2CAN 设备上验证。
+
+> 成品包的热点和登录密码公开且相同，附近知道密码的人可能连接并控制设备；HTTP 通信也未加密，请仅在可信环境使用。要使用自己的密码，需要修改配置并重新编译。
 
 ### 方式三：PlatformIO USB 刷写
 
-适合熟悉电脑开发工具的用户。下载本仓库，在项目目录中将 `src/credentials.example.h` 复制为 `src/credentials.h`，填写热点名称、热点密码和网页登录密码。连接开发板后，在项目目录运行：
+适合熟悉电脑开发工具的用户。下载本仓库，在项目目录中将 `src/credentials.example.h` 复制为 `src/credentials.h`，填写热点名称和热点密码；网页登录默认用户名 `admin`、密码 `88888888`。连接开发板后，在项目目录运行：
 
 ```sh
 pio run -t upload
@@ -111,4 +112,4 @@ PlatformIO 会编译并通过 USB 上传。若有多个串口，请先用 `pio d
 
 设备已经安装支持 OTA 的兼容固件且分区布局兼容时，可以连接设备热点，在网页中选择“OTA 固件更新”并上传应用固件 `firmware.bin`。空白或原厂设备不能直接使用本项目 OTA。上传时先使用当前固件的登录密码；成功重启后使用新固件的密码。
 
-请先备份现有固件和数据。公开固件需要单独处理凭据：**包含个人热点或网页登录密码的固件文件不要公开分享。**
+请先备份现有固件和数据。自行编译的固件如果包含个人热点或网页登录密码，请不要公开分享。

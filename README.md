@@ -87,7 +87,25 @@ https://github.com/emo666/t2can-lane-change
 
 ### 方式二：网页一键刷写
 
-计划提供项目专用的网页刷写方式，使用电脑 Chrome 或 Edge 通过 USB 连接设备，在网页上选择串口并安装。**专用刷写页面和可公开发布的完整固件还在准备中，目前暂无刷写链接。**
+使用乐鑫官方的 [ESP Tool 网页刷写工具](https://espressif.github.io/esptool-js/)，配合项目生成的个人完整固件。网页负责刷写，首次使用仍需先在电脑上生成固件文件。
+
+1. 在电脑上安装 Python、PlatformIO 和 esptool，下载本项目；将 `src/credentials.example.h` 复制为 `src/credentials.h`，填入自己的热点名称、热点密码和网页登录密码。热点密码至少 8 位。
+2. 在项目目录执行 `python scripts/make_complete_firmware.py`。脚本会编译并生成 `.pio/build/t2can-lane-change/t2can-complete.bin`。如提示缺少工具，可执行 `python -m pip install platformio esptool` 后重试。
+3. 将 T-2CAN 与车辆断开，用 USB 数据线连接电脑，在 Chrome 或 Edge 打开 [ESP Tool](https://espressif.github.io/esptool-js/)。
+4. 在 **Program** 区域点击 **Connect**，选择开发板串口。确认识别到 ESP32-S3 后，选择上一步生成的 `t2can-complete.bin`，将 **Flash Address 改为 `0x0`**，再点击 **Program**。不要随意选择 Erase all；刷写前请先备份。
+5. 刷写完成后设备重启；连接设置的热点，访问 `http://192.168.4.1/`。用户名为 `admin`，密码为配置的 `TOKEN`。
+
+此完整镜像会覆盖其写入范围内的数据，包括 NVS；即使没有勾选 Erase all 也可能丢失该范围内原有数据。**`firmware.bin` 是单独的应用文件，不是上述完整镜像，不能直接按 `0x0` 使用。**生成的完整固件包含个人密码，不要公开分享。该刷写流程尚未在实际 T-2CAN 设备上验证。
+
+### 方式三：PlatformIO USB 刷写
+
+适合熟悉电脑开发工具的用户。下载本仓库，在项目目录中将 `src/credentials.example.h` 复制为 `src/credentials.h`，填写热点名称、热点密码和网页登录密码。连接开发板后，在项目目录运行：
+
+```sh
+pio run -t upload
+```
+
+PlatformIO 会编译并通过 USB 上传。若有多个串口，请先用 `pio device list` 确认设备，再用 `pio run -t upload --upload-port COM3` 指定端口（将 `COM3` 换成实际端口）。刷写可能覆盖已有固件和分区，操作前请确认设备并备份。
 
 ### 后续更新：设备网页 OTA
 

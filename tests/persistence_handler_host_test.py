@@ -6,7 +6,7 @@ from pathlib import Path
 import os, subprocess, sys, tempfile
 
 root = Path(__file__).resolve().parents[1]
-src = (root / 't2can_monitor/t2can_monitor.ino').read_text(encoding='utf-8')
+src = (root / 'src/main.ino').read_text(encoding='utf-8')
 
 def extract(signature):
     start = src.index(signature)
